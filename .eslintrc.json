@@ -26,7 +26,6 @@
   "rules": {
     "require-jsdoc": "off",
     "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/ban-types": "off",
-    "include": ["src/components", "src/custom.d.ts"]
+    "@typescript-eslint/ban-types": "off"
   }
 }

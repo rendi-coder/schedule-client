@@ -3,9 +3,11 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
 import { authReducer } from './auth/auth.reducer';
+import { GeneralDataReducer } from './general_data/general_data.reducer';
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  generalData: GeneralDataReducer,
 });
 
 const persistConfig = {

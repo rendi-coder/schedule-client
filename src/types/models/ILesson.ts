@@ -1,6 +1,6 @@
 export interface ILesson {
   id: number;
-  number: string;
+  number: number;
   startTime: string;
   endTime: string;
 }

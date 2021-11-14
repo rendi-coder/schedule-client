@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Select, Spin, Table } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Select, Spin } from 'antd';
 import Api from '../../services';
 import * as Styles from './dashboard.styles';
 import { filterOptionHandler } from '../../helpers/filterOptionHandler';
 import { IGroup, ITimeTable } from '../../types/models';
 import { SelectValue } from 'antd/lib/select';
+import { TimeTable } from '../../components/TimeTable';
 
 const { Option } = Select;
 
@@ -42,7 +43,7 @@ export const Dashboard: React.FC = (): JSX.Element => {
   }, []);
 
   const onChangeGroup = useCallback(
-    (groupId: SelectValue, option) => {
+    (groupId: SelectValue) => {
       getTimeTable(groupId as number);
     },
     [getTimeTable]
@@ -71,104 +72,3 @@ export const Dashboard: React.FC = (): JSX.Element => {
     </Styles.Root>
   );
 };
-
-interface ITimeTableProps {
-  data: ITimeTable[];
-}
-
-const TimeTable: React.FC<ITimeTableProps> = ({ data }) => {
-  const columns = [
-    {
-      title: 'Lesson',
-      dataIndex: 'lesson',
-      key: 'lesson',
-    },
-    {
-      title: 'ClassRoom',
-      dataIndex: 'classRoom',
-      key: 'classRoom',
-    },
-    {
-      title: 'Discipline',
-      dataIndex: 'discipline',
-      key: 'discipline',
-    },
-    {
-      title: 'Teacher',
-      key: 'teacher',
-      dataIndex: 'teacher',
-    },
-  ];
-
-  const dataSource = useMemo(() => getProcessedTimeTableData(data), [data]);
-
-  return (
-    <Styles.ContentContainer>
-      {dataSource.map(({ dayOfWeek, lessons }, index) => (
-        <Styles.DayContainer key={dayOfWeek.toString() + index.toString()}>
-          {!!lessons.length ? (
-            <Table
-              title={() => <Styles.Title>{dayOfWeek}</Styles.Title>}
-              columns={columns}
-              dataSource={lessons}
-              pagination={false}
-              bordered
-            />
-          ) : (
-            <Styles.EmptyDay>
-              <Styles.Title>{dayOfWeek}</Styles.Title>
-              <p>Free Day</p>
-            </Styles.EmptyDay>
-          )}
-        </Styles.DayContainer>
-      ))}
-    </Styles.ContentContainer>
-  );
-};
-
-type TProcessedTimeTable = {
-  lesson: string;
-  classRoom: string;
-  discipline: string;
-  teacher: string;
-};
-
-interface IGetProcessedTimeTableDataResponse {
-  dayOfWeek: string;
-  lessons: TProcessedTimeTable[];
-}
-
-const getProcessedTimeTableData = (
-  timeTable: ITimeTable[]
-): IGetProcessedTimeTableDataResponse[] => {
-  const processedTimeTable: { [dayOfWeek: number]: Array<TProcessedTimeTable> } = {
-    [1]: [],
-    [2]: [],
-    [3]: [],
-    [4]: [],
-    [5]: [],
-  };
-
-  const parseData = ({
-    lesson,
-    classRoom,
-    discipline,
-    teacher,
-  }: ITimeTable): TProcessedTimeTable => ({
-    lesson: `${lesson.startTime + '-' + lesson.endTime}`,
-    classRoom: classRoom.code,
-    discipline: discipline.name,
-    teacher: `${teacher.surname} ${teacher.name}`,
-  });
-
-  timeTable.forEach((item) => {
-    processedTimeTable[item.dayOfWeek.dayOfWeek].push(parseData(item));
-  });
-
-  return Object.keys(processedTimeTable).map((key) => ({
-    dayOfWeek: days[+key - 1],
-    lessons: processedTimeTable[+key],
-  }));
-};
-
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

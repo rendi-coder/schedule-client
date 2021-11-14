@@ -1,12 +1,14 @@
 import React from 'react';
 import { NavLink, Redirect, Route, Switch } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
-import { HomeOutlined, UserOutlined } from '@ant-design/icons';
+import { HomeOutlined, UserOutlined, EditOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
 import { Dashboard } from '../../pages/dashboard';
 import Logo from '../../assets/logoKhai.png';
 import { TeachersPage } from '../../pages/teachers';
+import { GroupsPage } from '../../pages/groups';
+import { EditGroupSchedule } from '../../pages/edit-group-schedule';
 
 const { Sider } = Layout;
 
@@ -22,6 +24,9 @@ export const AppLayout: React.FC = () => {
           <Menu.Item key="2" icon={<UserOutlined />}>
             <NavLink to="/teachers">Teachers</NavLink>
           </Menu.Item>
+          <Menu.Item key="3" icon={<EditOutlined />}>
+            <NavLink to="/schedule">Edit Schedule</NavLink>
+          </Menu.Item>
         </Menu>
       </Sider>
       <Layout>
@@ -31,6 +36,8 @@ export const AppLayout: React.FC = () => {
             <Switch>
               <Route path="/dashboard" exact component={Dashboard} />
               <Route path="/teachers" exact component={TeachersPage} />
+              <Route path="/schedule" exact component={GroupsPage} />
+              <Route path="/schedule/:groupId" exact component={EditGroupSchedule} />
               <Redirect to="/dashboard" />
             </Switch>
           </InnerContent>
@@ -48,7 +55,6 @@ const Header = styled(Layout.Header)`
 const Content = styled(Layout.Content)`
   margin: 24px 16px 0;
   overflow-y: auto;
-  /* background: red; */
 `;
 
 const InnerContent = styled.div`
