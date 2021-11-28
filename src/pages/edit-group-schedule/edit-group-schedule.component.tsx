@@ -29,9 +29,7 @@ export const EditGroupSchedule: React.FC = () => {
 
   return (
     <Styles.Root>
-      {!!timeTable.length && (
-        <TimeTable data={timeTable} edit groupId={+groupId} update={getTimeTable} />
-      )}
+      <TimeTable data={timeTable} edit groupId={+groupId} update={getTimeTable} />
       <Styles.Loader>
         <Spin spinning={loading} size="large" tip={'Loading...'} className={'loader'} />
       </Styles.Loader>

@@ -4,6 +4,7 @@ import { IDiscipline } from './IDiscipline';
 import { ILesson } from './ILesson';
 import { IGroup } from './IGroup';
 import { IDayOfWeek } from './IDayOfWeek';
+import { IArticle } from '.';
 
 export interface ITimeTable {
   id: number;
@@ -13,4 +14,5 @@ export interface ITimeTable {
   discipline: IDiscipline;
   teacher: ITeacher;
   classRoom: IClassRoom;
+  articles: Array<IArticle>;
 }

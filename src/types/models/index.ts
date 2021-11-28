@@ -6,3 +6,4 @@ export * from './ILesson';
 export * from './IDiscipline';
 export * from './ITeacher';
 export * from './IClassRoom';
+export * from './IArticle';

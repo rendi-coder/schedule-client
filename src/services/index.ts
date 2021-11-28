@@ -6,6 +6,7 @@ import { TimeTableApiService } from './TimeTableServiceApi';
 import { DisciplineApiService } from './DisciplineServiceApi';
 import { ClassRoomApiService } from './ClassRoomServiceApi';
 import { DayOfWeekApiService } from './DayOfWeekServiceApi';
+import { ArticleApiService } from './ArticleServiceApi';
 
 export default {
   auth: new AuthServiceApi(),
@@ -16,4 +17,5 @@ export default {
   classRoom: new ClassRoomApiService(),
   lesson: new LessonApiService(),
   dayOfWeek: new DayOfWeekApiService(),
+  article: new ArticleApiService(),
 };

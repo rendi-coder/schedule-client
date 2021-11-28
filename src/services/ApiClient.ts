@@ -16,7 +16,7 @@ export class ApiClient {
     });
 
     this.axios.interceptors.request.use((cfg) => {
-      // eslint-disable-next-line no-param-reassign
+      // eslint-disable-next-line
       (cfg as any).headers.Authorization = `Bearer ${store.getState().auth.token}`;
 
       return cfg;
@@ -37,7 +37,7 @@ export class ApiClient {
     );
   }
 
-  public static get Instance() {
+  public static get Instance(): ApiClient {
     if (!this.instance) {
       this.instance = new ApiClient();
     }

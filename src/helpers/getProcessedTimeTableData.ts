@@ -1,10 +1,12 @@
-import { ITimeTable } from '../types/models';
+import { IArticle, ITimeTable } from '../types/models';
 
-type TProcessedTimeTable = {
-  lesson: { title: string; number: number };
-  classRoom: string;
-  discipline: string;
-  teacher: string;
+export type TProcessedTimeTable = {
+  id: number;
+  lesson: { title: string; number: number; id: number };
+  classRoom: { title: string; id: number };
+  discipline: { title: string; id: number };
+  teacher: { title: string; id: number };
+  articles: IArticle[];
 };
 
 export interface IGetProcessedTimeTableDataResponse {
@@ -24,15 +26,23 @@ export const getProcessedTimeTableData = (
   };
 
   const parseData = ({
+    id,
     lesson,
     classRoom,
     discipline,
     teacher,
+    articles,
   }: ITimeTable): TProcessedTimeTable => ({
-    lesson: { title: `${lesson.startTime + '-' + lesson.endTime}`, number: lesson.number },
-    classRoom: classRoom.code,
-    discipline: discipline.name,
-    teacher: `${teacher.surname} ${teacher.name}`,
+    id,
+    lesson: {
+      title: `${lesson.startTime + '-' + lesson.endTime}`,
+      number: lesson.number,
+      id: lesson.id,
+    },
+    classRoom: { title: classRoom.code, id: classRoom.id },
+    discipline: { title: discipline.name, id: discipline.id },
+    teacher: { title: `${teacher.surname} ${teacher.name}`, id: teacher.id },
+    articles,
   });
 
   timeTable.forEach((item) => {

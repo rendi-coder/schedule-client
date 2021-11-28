@@ -3,11 +3,17 @@ import { Button, Drawer, Form, Input, Spin, Table } from 'antd';
 import Api from '../../services';
 import { ITeacher } from '../../types/models';
 import * as Styles from './teachers.styles';
+import { useDispatch, useSelector } from 'react-redux';
+import { setTeachers } from '../../store/general_data/general_data.actions';
+import { RootState } from '../../store';
 
 export const TeachersPage = (): JSX.Element => {
-  const [teachers, setTeachers] = useState<ITeacher[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
+
+  const { teachers } = useSelector((state: RootState) => state.generalData);
+
+  const dispatch = useDispatch();
 
   const [form] = Form.useForm();
   const onReset = useCallback(() => {
@@ -33,8 +39,8 @@ export const TeachersPage = (): JSX.Element => {
 
   const getTeachers = useCallback(async () => {
     const response = await Api.teachers.getTeachers();
-    setTeachers(response);
-  }, []);
+    dispatch(setTeachers(response));
+  }, [dispatch]);
 
   useEffect(() => {
     requestWrapper(getTeachers);
@@ -44,12 +50,12 @@ export const TeachersPage = (): JSX.Element => {
     (values: ITeacher) => {
       const { name, surname, email } = values;
       requestWrapper(async () => {
-        const newTeacher = await Api.teachers.createTeacher({ name, surname, email });
-        setTeachers((prevState) => [...prevState, newTeacher]);
+        await Api.teachers.createTeacher({ name, surname, email });
+        await getTeachers();
         onClose();
       });
     },
-    [requestWrapper, onClose]
+    [requestWrapper, onClose, getTeachers]
   );
 
   const columns = useMemo(

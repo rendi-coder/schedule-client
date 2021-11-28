@@ -10,6 +10,9 @@ export const ContentContainer = styled.div`
 `;
 
 export const Title = styled.span`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 18px;
 `;
 
@@ -20,4 +23,11 @@ export const DayContainer = styled.div`
 export const EmptyDay = styled.div`
   width: 100%;
   text-align: center;
+`;
+
+export const ActionBtn = styled.div`
+  color: #1890ff;
+  text-decoration: underline;
+  font-size: 16px;
+  cursor: pointer;
 `;

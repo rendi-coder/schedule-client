@@ -1,15 +1,14 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Button, Col, Drawer, Form, FormInstance, Row, Select, Spin, Table } from 'antd';
+import { Button, Drawer, Form, Table } from 'antd';
 import {
   getProcessedTimeTableData,
   IGetProcessedTimeTableDataResponse,
+  TProcessedTimeTable,
 } from '../../helpers/getProcessedTimeTableData';
-import { IClassRoom, IDiscipline, ITeacher, ITimeTable } from '../../types/models';
+import { ITimeTable } from '../../types/models';
 import * as Styles from './time-table.styles';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import Api from '../../services';
-import { Loader } from '../../styles/Loader';
+import { DrawerForm } from './drawer-add-lesson';
+import { DrawerLessonInfo } from './drawer-lesson-info';
 
 interface ITimeTableProps {
   data: ITimeTable[];
@@ -20,6 +19,8 @@ interface ITimeTableProps {
 
 export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, update }) => {
   const [selectedDay, setSelectedDay] = useState<IGetProcessedTimeTableDataResponse | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<TProcessedTimeTable | null>(null);
+
   const columns = [
     {
       title: 'Lesson',
@@ -29,18 +30,29 @@ export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, upda
     },
     {
       title: 'ClassRoom',
-      dataIndex: 'classRoom',
-      key: 'classRoom',
+      dataIndex: ['classRoom', 'title'] as string[],
+      // eslint-disable-next-line
+      key: ['classRoom', 'title'] as any,
     },
     {
       title: 'Discipline',
-      dataIndex: 'discipline',
-      key: 'discipline',
+      dataIndex: ['discipline', 'title'] as string[],
+      // eslint-disable-next-line
+      key: ['discipline', 'title'] as any,
     },
     {
       title: 'Teacher',
-      key: 'teacher',
-      dataIndex: 'teacher',
+      dataIndex: ['teacher', 'title'] as string[],
+      // eslint-disable-next-line
+      key: ['teacher', 'title'] as any,
+    },
+    {
+      title: 'Action',
+      dataIndex: 'action',
+      key: 'action',
+      render: (text = 'Lesson info', record: TProcessedTimeTable) => (
+        <Styles.ActionBtn onClick={() => openLessonInfoForm(record)}>{text}</Styles.ActionBtn>
+      ),
     },
   ];
 
@@ -56,26 +68,53 @@ export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, upda
     return result;
   }, [selectedDay]);
 
-  const [form] = Form.useForm();
+  const [addNewLessonForm] = Form.useForm();
+  const [lessonInfoForm] = Form.useForm();
+
   const onReset = useCallback(() => {
-    form.resetFields();
-  }, [form]);
+    addNewLessonForm.resetFields();
+    lessonInfoForm.resetFields();
+  }, [addNewLessonForm, lessonInfoForm]);
 
   const onClose = useCallback(() => {
     onReset();
     setSelectedDay(null);
+    setSelectedLesson(null);
   }, [onReset]);
+
+  const openAddNewForm = (data: IGetProcessedTimeTableDataResponse) => {
+    setSelectedLesson(null);
+    setSelectedDay(data);
+  };
+
+  const openLessonInfoForm = (data: TProcessedTimeTable) => {
+    setSelectedDay(null);
+    setSelectedLesson(data);
+  };
+
+  const drawerInfo = useMemo(() => {
+    const title =
+      selectedDay?.dayOfWeek ||
+      `Lesson №${selectedLesson?.lesson.number} ${selectedLesson?.lesson.title}`;
+    const visible = Boolean(selectedDay || selectedLesson);
+    const isOpenLessonInfo = Boolean(selectedLesson);
+    return { title, visible, isOpenLessonInfo };
+  }, [selectedDay, selectedLesson]);
 
   return (
     <Styles.ContentContainer>
       {dataSource.map(({ dayOfWeek, lessons }, index) => (
-        <Styles.DayContainer
-          key={dayOfWeek.toString() + index.toString()}
-          onClick={() => edit && setSelectedDay(dataSource[index])}
-        >
+        <Styles.DayContainer key={dayOfWeek.toString() + index.toString()}>
           {!!lessons.length ? (
             <Table
-              title={() => <Styles.Title>{dayOfWeek}</Styles.Title>}
+              title={() => (
+                <Styles.Title>
+                  <span>{dayOfWeek}</span>
+                  <Button onClick={() => edit && openAddNewForm(dataSource[index])} type="primary">
+                    Add Lesson
+                  </Button>
+                </Styles.Title>
+              )}
               columns={columns}
               dataSource={lessons}
               pagination={false}
@@ -90,156 +129,26 @@ export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, upda
         </Styles.DayContainer>
       ))}
       {edit && (
-        <Drawer
-          title={selectedDay?.dayOfWeek}
-          width={600}
-          onClose={onClose}
-          visible={Boolean(selectedDay)}
-        >
-          <DrawerForm
-            dayOfWeekTitle={selectedDay?.dayOfWeek || ''}
-            groupId={groupId as number}
-            existedLessons={existedLessons}
-            close={onClose}
-            form={form}
-            update={update}
-          />
+        <Drawer title={drawerInfo.title} width={600} onClose={onClose} visible={drawerInfo.visible}>
+          {drawerInfo.isOpenLessonInfo ? (
+            <DrawerLessonInfo
+              selectedLesson={selectedLesson as TProcessedTimeTable}
+              close={onClose}
+              form={lessonInfoForm}
+              update={update}
+            />
+          ) : (
+            <DrawerForm
+              dayOfWeekTitle={selectedDay?.dayOfWeek || ''}
+              groupId={groupId as number}
+              existedLessons={existedLessons}
+              close={onClose}
+              form={addNewLessonForm}
+              update={update}
+            />
+          )}
         </Drawer>
       )}
     </Styles.ContentContainer>
-  );
-};
-
-const { Option } = Select;
-
-interface IDrawerFormProps {
-  dayOfWeekTitle: string;
-  groupId: number;
-  existedLessons: number[];
-  close: () => void;
-  update?: () => Promise<void>;
-  // eslint-disable-next-line
-  form: FormInstance<any>;
-}
-
-type TOnSubmitProps = {
-  lessonId: number;
-  disciplineId: number;
-  teacherId: number;
-  classRoomId: number;
-};
-
-const DrawerForm: React.FC<IDrawerFormProps> = ({
-  dayOfWeekTitle,
-  groupId,
-  existedLessons,
-  close,
-  form,
-  update,
-}) => {
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const { disciplines, teachers, classRooms, lessons, daysOfWeek } = useSelector(
-    (state: RootState) => state.generalData
-  );
-
-  const dayOfWeekId = daysOfWeek.find((day) => day.name === dayOfWeekTitle)?.id as number;
-
-  const filteredLessons = useMemo(
-    () => lessons.filter((lesson) => existedLessons.every((l) => l !== lesson.number)),
-    [lessons, existedLessons]
-  );
-
-  const onSubmit = async (values: TOnSubmitProps) => {
-    try {
-      setLoading(true);
-      await Api.timeTable.createTimeTable({ ...values, groupId, dayOfWeekId });
-      await update?.();
-      close();
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Form form={form} layout="vertical" hideRequiredMark onFinish={onSubmit}>
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name="lessonId"
-            label="Lesson"
-            rules={[{ required: true, message: 'Please select number of lesson' }]}
-          >
-            <Select placeholder="Please select number of lesson">
-              {filteredLessons.map((lesson) => (
-                <Option value={lesson.id} key={lesson.id}>
-                  №{lesson.number} ({lesson.startTime}-{lesson.endTime})
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            name="disciplineId"
-            label="Discipline"
-            rules={[{ required: true, message: 'Please choose the discipline' }]}
-          >
-            <Select placeholder="Please choose the discipline">
-              {disciplines.map((item: IDiscipline) => (
-                <Option value={item.id} key={item.id}>
-                  {item.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name="teacherId"
-            label="Teacher"
-            rules={[{ required: true, message: 'Please choose the teacher' }]}
-          >
-            <Select placeholder="Please choose the teacher">
-              {teachers.map((teacher: ITeacher) => (
-                <Option
-                  value={teacher.id}
-                  key={teacher.id}
-                >{`${teacher.name} ${teacher.surname}`}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            name="classRoomId"
-            label="Class Room"
-            rules={[{ required: true, message: 'Please choose the class room' }]}
-          >
-            <Select placeholder="Please choose the class room">
-              {classRooms.map((item: IClassRoom) => (
-                <Option value={item.id} key={item.id}>
-                  {item.code}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row gutter={16}>
-        <Col span={16}>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Col>
-      </Row>
-      <Loader>
-        <Spin spinning={loading} size="large" tip={'Loading...'} />
-      </Loader>
-    </Form>
   );
 };
