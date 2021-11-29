@@ -6,6 +6,9 @@ import { filterOptionHandler } from '../../helpers/filterOptionHandler';
 import { IGroup, ITimeTable } from '../../types/models';
 import { SelectValue } from 'antd/lib/select';
 import { TimeTable } from '../../components/TimeTable';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedGroupId } from '../../store/general_data/general_data.actions';
+import { RootState } from '../../store';
 
 const { Option } = Select;
 
@@ -13,6 +16,9 @@ export const Dashboard: React.FC = (): JSX.Element => {
   const [loading, setLoading] = useState<boolean>(false);
   const [groups, setGroups] = useState<IGroup[]>([]);
   const [timeTable, setTimeTable] = useState<ITimeTable[]>([]);
+  const selectedGroupId = useSelector((state: RootState) => state.generalData.selectedGroupId);
+
+  const dispatch = useDispatch();
 
   const getGroupsRequest = useCallback(async () => {
     try {
@@ -26,12 +32,9 @@ export const Dashboard: React.FC = (): JSX.Element => {
     }
   }, []);
 
-  useEffect(() => {
-    getGroupsRequest();
-  }, [getGroupsRequest]);
-
   const getTimeTable = useCallback(async (groupId: number) => {
     try {
+      console.log(groupId);
       setLoading(true);
       const response = await Api.timeTable.getTimeTableByGroup(groupId);
       setTimeTable(response);
@@ -42,11 +45,21 @@ export const Dashboard: React.FC = (): JSX.Element => {
     }
   }, []);
 
+  useEffect(() => {
+    getGroupsRequest();
+  }, [getGroupsRequest]);
+
+  useEffect(() => {
+    if (selectedGroupId) {
+      getTimeTable(selectedGroupId);
+    }
+  }, [selectedGroupId, getTimeTable]);
+
   const onChangeGroup = useCallback(
     (groupId: SelectValue) => {
-      getTimeTable(groupId as number);
+      dispatch(setSelectedGroupId(groupId as number));
     },
-    [getTimeTable]
+    [dispatch]
   );
 
   return (
@@ -58,6 +71,7 @@ export const Dashboard: React.FC = (): JSX.Element => {
         optionFilterProp="children"
         onChange={onChangeGroup}
         filterOption={filterOptionHandler}
+        value={selectedGroupId}
       >
         {groups.map(({ id, name }) => (
           <Option value={id} key={name.toString()}>
@@ -65,7 +79,11 @@ export const Dashboard: React.FC = (): JSX.Element => {
           </Option>
         ))}
       </Select>
-      {!!timeTable.length && <TimeTable data={timeTable} />}
+      {!!timeTable.length ? (
+        <TimeTable data={timeTable} />
+      ) : (
+        <div style={{ fontSize: 20, marginTop: 20 }}>Please Select Group</div>
+      )}
       <Styles.Loader>
         <Spin spinning={loading} size="large" tip={'Loading...'} className={'loader'} />
       </Styles.Loader>

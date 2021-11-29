@@ -9,6 +9,7 @@ import {
   setGroups,
   setClassRooms,
   setLessons,
+  setSelectedGroupId,
 } from './general_data.actions';
 import { IClassRoom } from '../../types/models';
 
@@ -19,6 +20,7 @@ export interface IGeneralDataState {
   classRooms: IClassRoom[];
   lessons: ILesson[];
   daysOfWeek: IDayOfWeek[];
+  selectedGroupId?: number;
 }
 
 export type TGeneralDataAction =
@@ -26,4 +28,5 @@ export type TGeneralDataAction =
   | ReturnType<typeof setTeachers>
   | ReturnType<typeof setGroups>
   | ReturnType<typeof setClassRooms>
-  | ReturnType<typeof setLessons>;
+  | ReturnType<typeof setLessons>
+  | ReturnType<typeof setSelectedGroupId>;

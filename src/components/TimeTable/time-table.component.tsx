@@ -21,40 +21,43 @@ export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, upda
   const [selectedDay, setSelectedDay] = useState<IGetProcessedTimeTableDataResponse | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<TProcessedTimeTable | null>(null);
 
-  const columns = [
-    {
-      title: 'Lesson',
-      dataIndex: ['lesson', 'title'] as string[],
-      // eslint-disable-next-line
-      key: ['lesson', 'title'] as any,
-    },
-    {
-      title: 'ClassRoom',
-      dataIndex: ['classRoom', 'title'] as string[],
-      // eslint-disable-next-line
-      key: ['classRoom', 'title'] as any,
-    },
-    {
-      title: 'Discipline',
-      dataIndex: ['discipline', 'title'] as string[],
-      // eslint-disable-next-line
-      key: ['discipline', 'title'] as any,
-    },
-    {
-      title: 'Teacher',
-      dataIndex: ['teacher', 'title'] as string[],
-      // eslint-disable-next-line
-      key: ['teacher', 'title'] as any,
-    },
-    {
-      title: 'Action',
-      dataIndex: 'action',
-      key: 'action',
-      render: (text = 'Lesson info', record: TProcessedTimeTable) => (
-        <Styles.ActionBtn onClick={() => openLessonInfoForm(record)}>{text}</Styles.ActionBtn>
-      ),
-    },
-  ];
+  const columns = useMemo(() => {
+    const result = [
+      {
+        title: 'Lesson',
+        dataIndex: ['lesson', 'title'] as string[],
+        // eslint-disable-next-line
+        key: ['lesson', 'title'] as any,
+      },
+      {
+        title: 'ClassRoom',
+        dataIndex: ['classRoom', 'title'] as string[],
+        // eslint-disable-next-line
+        key: ['classRoom', 'title'] as any,
+      },
+      {
+        title: 'Discipline',
+        dataIndex: ['discipline', 'title'] as string[],
+        // eslint-disable-next-line
+        key: ['discipline', 'title'] as any,
+      },
+      {
+        title: 'Teacher',
+        dataIndex: ['teacher', 'title'] as string[],
+        // eslint-disable-next-line
+        key: ['teacher', 'title'] as any,
+      },
+      {
+        title: 'Action',
+        dataIndex: 'action',
+        key: 'action',
+        render: (text = 'Lesson info', record: TProcessedTimeTable) => (
+          <Styles.ActionBtn onClick={() => openLessonInfoForm(record)}>{text}</Styles.ActionBtn>
+        ),
+      },
+    ];
+    return edit ? result : result.slice(0, 4);
+  }, [edit]);
 
   const dataSource = useMemo(() => getProcessedTimeTableData(data), [data]);
 
@@ -110,9 +113,11 @@ export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, upda
               title={() => (
                 <Styles.Title>
                   <span>{dayOfWeek}</span>
-                  <Button onClick={() => edit && openAddNewForm(dataSource[index])} type="primary">
-                    Add Lesson
-                  </Button>
+                  {edit && (
+                    <Button onClick={() => openAddNewForm(dataSource[index])} type="primary">
+                      Add Lesson
+                    </Button>
+                  )}
                 </Styles.Title>
               )}
               columns={columns}

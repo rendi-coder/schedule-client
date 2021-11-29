@@ -8,6 +8,7 @@ import {
   SET_GROUPS,
   SET_LESSONS,
   SET_DAYS_OF_WEEK,
+  SET_SELECTED_GROUP_ID,
 } from './general_data.const';
 import {
   setDisciplines,
@@ -16,6 +17,7 @@ import {
   setGroups,
   setLessons,
   setDayOfWeek,
+  setSelectedGroupId,
 } from './general_data.actions';
 
 const initialState = {
@@ -25,6 +27,7 @@ const initialState = {
   classRooms: [],
   lessons: [],
   daysOfWeek: [],
+  setSelectedGroupId: undefined,
 };
 
 export const GeneralDataReducer: Reducer<IGeneralDataState, TGeneralDataAction> = (
@@ -72,6 +75,13 @@ export const GeneralDataReducer: Reducer<IGeneralDataState, TGeneralDataAction> 
       return {
         ...state,
         daysOfWeek: payload,
+      };
+    }
+    case SET_SELECTED_GROUP_ID: {
+      const { payload } = action as ReturnType<typeof setSelectedGroupId>;
+      return {
+        ...state,
+        selectedGroupId: payload,
       };
     }
     default:
