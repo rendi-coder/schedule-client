@@ -51,7 +51,7 @@ export const getProcessedTimeTableData = (
 
   return Object.keys(processedTimeTable).map((key) => ({
     dayOfWeek: days[+key - 1],
-    lessons: processedTimeTable[+key],
+    lessons: processedTimeTable[+key].sort((a, b) => a.lesson.number - b.lesson.number),
   }));
 };
 
