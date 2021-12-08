@@ -126,7 +126,7 @@ export const TimeTable: React.FC<ITimeTableProps> = ({ data, edit, groupId, upda
               bordered
             />
           ) : (
-            <Styles.EmptyDay>
+            <Styles.EmptyDay onClick={() => edit && openAddNewForm(dataSource[index])}>
               <Styles.Title>{dayOfWeek}</Styles.Title>
               <p>Free Day</p>
             </Styles.EmptyDay>
